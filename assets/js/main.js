@@ -191,3 +191,26 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+const palavrasChave = [
+  "Microplásticos",
+  "Nanoplásticos",
+  "Saúde Cardiovascular",
+  "Placenta Humana",
+  "Corrente Sanguínea",
+  "Disruptores Endócrinos",
+  "Bisfenol A (BPA)",
+  "Ftalatos",
+  "Plastisfera",
+  "Bioacumulação",
+  "Estresse Oxidativo",
+  "Microbioma Intestinal",
+  "Polietileno",
+  "Polipropileno",
+  "Garrafas PET",
+  "Fibras Sintéticas",
+  "One Health",
+  "Biotecnologia",
+  "Enzima PETase",
+  "Saúde e Bem-Estar"
+];
