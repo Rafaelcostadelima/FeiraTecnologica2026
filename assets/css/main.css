@@ -2347,7 +2347,6 @@ section,
 
 .testimonials .testimonial-body p::before,
 .testimonials .testimonial-body p::after {
-  content: '"';
   font-size: 1.5rem;
   color: var(--accent-color);
   opacity: 0.6;
