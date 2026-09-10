@@ -1,5 +1,6 @@
 # FeiraTecnologica2026
 É um repositório destinado para a feira tecnológica de 2026
+Link para o site: https://rafaelcostadelima.github.io/FeiraTecnologica2026/
 
 URL do Template usado: https://bootstrapmade.com/newtemplate-bootstrap-website-template/
 
