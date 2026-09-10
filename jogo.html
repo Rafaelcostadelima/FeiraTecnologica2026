@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Desafio BioNano - O Jogo</title>
+  <meta name="description" content="Teste seus conhecimentos sobre o impacto dos microplásticos no planeta e no corpo humano.">
+
+  <!-- Favicons -->
+  <link href="assets/img/BioNano-Logo.png" rel="icon">
+  <link href="assets/img/BioNano-Logo.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    /* Estilos específicos do jogo integrados ao tema do site */
+    .game-section {
+      padding-top: 140px;
+      padding-bottom: 80px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+
+    .game-box {
+      background: var(--surface-color);
+      border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      max-width: 800px;
+      margin: 0 auto;
+      backdrop-filter: blur(10px);
+    }
+
+    .game-progress-bar-container {
+      height: 12px;
+      background: color-mix(in srgb, var(--accent-color), transparent 85%);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .game-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-color);
+      transition: width 0.4s ease;
+    }
+
+    .question-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--heading-color);
+      margin-bottom: 25px;
+      line-height: 1.4;
+    }
+
+    .option-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      border: 2px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--default-color);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .option-btn:hover:not([disabled]) {
+      border-color: var(--accent-color);
+      background: color-mix(in srgb, var(--accent-color), transparent 94%);
+      transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+      background: #2e7d32 !important;
+      color: #ffffff !important;
+      border-color: #2e7d32 !important;
+    }
+
+    .option-btn.incorrect {
+      background: #c62828 !important;
+      color: #ffffff !important;
+      border-color: #c62828 !important;
+    }
+
+    .feedback-box {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 12px;
+      display: none;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .feedback-box.correct {
+      background: #e8f5e9;
+      border: 1px solid #a5d6a7;
+      color: #1b5e20;
+    }
+
+    .feedback-box.incorrect {
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      color: #b71c1c;
+    }
+
+    .game-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 25px;
+    }
+
+    .btn-next {
+      background: var(--accent-color);
+      color: var(--contrast-color);
+      border: none;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      display: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-next:hover {
+      background: color-mix(in srgb, var(--accent-color), black 15%);
+      color: var(--contrast-color);
+      transform: translateY(-2px);
+    }
+
+    .score-badge {
+      font-weight: 700;
+      color: var(--heading-color);
+      font-size: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header idêntico ao do site principal -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+        <h1 class="sitename">BioNano</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="index.html#hero">Início</a></li>
+          <li><a href="index.html#about">Contexto</a></li>
+          <li><a href="index.html#features">Efeitos</a></li>
+          <li><a href="index.html#services">Possíveis soluções</a></li>
+          <li><a href="index.html#testimonials">Cientistas</a></li>
+          <li><a href="index.html#contact">Contato</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+      <a class="btn-getstarted active" href="jogo.html">Jogando</a>
+
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="game-section">
+      <div class="container">
+        
+        <!-- Tela Inicial do Jogo -->
+        <div id="start-screen" class="game-box text-center">
+          <div class="mb-4">
+            <i class="bi bi-controller text-success" style="font-size: 3.5rem;"></i>
+          </div>
+          <h2 class="mb-3" style="font-weight: 800; color: var(--heading-color);">Desafio BioNano: O Teste da Realidade</h2>
+          <p class="mb-4" style="font-size: 1.1rem; color: color-mix(in srgb, var(--default-color), transparent 20%);">
+            Você realmente compreendeu a dimensão da ameaça microscópica ao ler o site? Este jogo avalia sua atenção aos dados ecológicos, biológicos e científicos apresentados na plataforma.
+          </p>
+          <button class="btn btn-primary px-5 py-3 rounded-pill fw-bold" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="startGame()">
+            Começar Desafio <i class="bi bi-play-circle-fill ms-2"></i>
+          </button>
+        </div>
+
+        <!-- Tela das Questões -->
+        <div id="quiz-screen" class="game-box" style="display: none;">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span id="question-count" class="score-badge">Questão 1 de 6</span>
+            <span id="live-score" class="score-badge">Acertos: 0</span>
+          </div>
+
+          <div class="game-progress-bar-container">
+            <div id="progress-bar" class="game-progress-bar"></div>
+          </div>
+
+          <h3 id="question-text" class="question-title">Carregando pergunta...</h3>
+
+          <div id="options-container">
+            <!-- As alternativas são geradas dinamicamente -->
+          </div>
+
+          <div id="feedback-container" class="feedback-box"></div>
+
+          <div class="game-footer">
+            <span id="feedback-hint" class="text-muted small">Selecione uma resposta</span>
+            <button id="next-btn" class="btn-next" onclick="nextQuestion()">
+              Próxima <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tela de Resultado -->
+        <div id="result-screen" class="game-box text-center" style="display: none;">
+          <div id="result-icon" class="mb-3"></div>
+          <h2 id="result-title" class="fw-bold mb-3" style="color: var(--heading-color);"></h2>
+          <p id="result-text" class="lead mb-4"></p>
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <button class="btn btn-primary rounded-pill px-4 py-2" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="startGame()">
+              <i class="bi bi-arrow-clockwise me-1"></i> Jogar Novamente
+            </button>
+            <a href="index.html" class="btn btn-outline-success rounded-pill px-4 py-2">
+              <i class="bi bi-house me-1"></i> Voltar ao Site
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Banco de perguntas baseadas no conteúdo do site BioNano
+    const questions = [
+      {
+        question: "De acordo com o site, até onde os microplásticos já foram detectados no planeta Terra?",
+        options: [
+          "Apenas em praias urbanas e aterros sanitários.",
+          "Desde o gelo marinho do Ártico até a Fossa das Marianas, a quase 11 km de profundidade.",
+          "Apenas na água da torneira em grandes metrópoles.",
+          "Exclusivamente no estômago de peixes de criadouros industriais."
+        ],
+        correct: 1,
+        explanation: "Exato! No site é destacado que os microplásticos são onipresentes: foram achados do gelo ártico até o ponto mais fundo do oceano (Fossa das Marianas)."
+      },
+      {
+        question: "O que é o fenômeno da 'Falsa Saciedade' que afeta 90% das aves e animais marinhos?",
+        options: [
+          "O plástico dilata o estômago artificialmente, fazendo o animal acreditar que está cheio até morrer de inanição.",
+          "O plástico emite substâncias que tiram o sono e aceleram o metabolismo do animal.",
+          "Uma ilusão de ótica que impede os animais de localizarem presas reais no mar.",
+          "Um odor artificial do plástico que atrai predadores para locais poluídos."
+        ],
+        correct: 0,
+        explanation: "Correto! As partículas ocupam o volume digestivo; o animal se sente 'cheio', para de se alimentar e acaba morrendo de fome com o estômago lotado de plástico."
+      },
+      {
+        question: "O que os cientistas chamam de 'Plastisfera'?",
+        options: [
+          "Uma bolha de gás tóxico formada pelo derretimento de sacolas plásticas.",
+          "O nome da máquina criada para filtrar resíduos nos oceanos.",
+          "Uma ilha artificial de microrganismos onde bactérias patogênicas (como Vibrio) pegam carona e viajam continentes.",
+          "A camada da atmosfera onde se concentram fibras têxteis sintéticas."
+        ],
+        correct: 2,
+        explanation: "Perfeito! A Plastisfera transforma pedaços microscópicos em vetores de patógenos que viajam milhares de quilômetros cruzando oceanos."
+      },
+      {
+        question: "Quem é considerado o pioneiro que cunhou o termo 'microplástico' em 2004?",
+        options: [
+          "Dra. Desiree LaBeaud",
+          "Dra. Jennifer Brandon",
+          "Richard Thompson",
+          "Chelsea Rochman"
+        ],
+        correct: 2,
+        explanation: "Certo! O biólogo marinho Richard Thompson comprovou o acúmulo há décadas e defende mudanças radicais no design dos produtos na origem."
+      },
+      {
+        question: "Em estudos citados no site, qual risco cardiovascular foi associado a pessoas com placas de gordura contaminadas por microplásticos?",
+        options: [
+          "Risco 4,5 vezes maior de infarto, AVC ou morte.",
+          "Risco nulo, pois as células absorvem e dissolvem polímeros sintéticos.",
+          "Apenas palpitações leves sem dano celular.",
+          "Aumento de 10% na elasticidade vascular."
+        ],
+        correct: 0,
+        explanation: "Impressionante e preocupante: pacientes com micro e nanoplásticos nas placas arteriais apresentaram 4,5x mais risco de complicações graves e morte."
+      },
+      {
+        question: "O que é o 'Efeito Esponja' dos microplásticos no meio ambiente e no corpo?",
+        options: [
+          "Eles absorvem a água potável dos rios reduzindo o volume dos aquíferos.",
+          "Eles absorvem e concentram toxinas dispersas na água (como pesticidas e agrotóxicos), liberando esse veneno direto nos órgãos de quem os ingere.",
+          "A habilidade das microfibras limparem o sangue humano.",
+          "A retenção de nutrientes benéficos que impede algas de crescerem."
+        ],
+        correct: 1,
+        explanation: "Muito bem! O plástico atua como um ímã químico, concentrando toxinas até 1 milhão de vezes mais do que na água livre e liberando-as nos tecidos biológicos."
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function startGame() {
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('result-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQuestionIndex];
+      document.getElementById('question-count').innerText = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+      document.getElementById('live-score').innerText = `Acertos: ${score}`;
+      document.getElementById('question-text').innerText = q.question;
+
+      // Barra de progresso
+      const pct = ((currentQuestionIndex) / questions.length) * 100;
+      document.getElementById('progress-bar').style.width = pct + '%';
+
+      // Limpar feedback e botão próximo
+      const feedback = document.getElementById('feedback-container');
+      feedback.style.display = 'none';
+      feedback.className = 'feedback-box';
+      feedback.innerHTML = '';
+      document.getElementById('next-btn').style.display = 'none';
+      document.getElementById('feedback-hint').innerText = "Selecione uma resposta para continuar";
+
+      // Renderizar opções
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + idx)}.</strong> ${opt}`;
+        btn.onclick = () => selectOption(idx);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function selectOption(selectedIdx) {
+      const q = questions[currentQuestionIndex];
+      const buttons = document.querySelectorAll('.option-btn');
+      const feedback = document.getElementById('feedback-container');
+      const nextBtn = document.getElementById('next-btn');
+
+      // Desabilitar todas opções após o clique
+      buttons.forEach(b => b.disabled = true);
+
+      if (selectedIdx === q.correct) {
+        buttons[selectedIdx].classList.add('correct');
+        feedback.className = 'feedback-box correct';
+        feedback.innerHTML = `<strong><i class="bi bi-check-circle-fill"></i> Correto!</strong> ${q.explanation}`;
+        score++;
+      } else {
+        buttons[selectedIdx].classList.add('incorrect');
+        buttons[q.correct].classList.add('correct');
+        feedback.className = 'feedback-box incorrect';
+        feedback.innerHTML = `<strong><i class="bi bi-x-circle-fill"></i> Incorreto.</strong> ${q.explanation}`;
+      }
+
+      feedback.style.display = 'block';
+      document.getElementById('live-score').innerText = `Acertos: ${score}`;
+      document.getElementById('feedback-hint').innerText = "Veja a explicação acima e prossiga:";
+      nextBtn.style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      const resultScreen = document.getElementById('result-screen');
+      resultScreen.style.display = 'block';
+
+      const iconDiv = document.getElementById('result-icon');
+      const title = document.getElementById('result-title');
+      const text = document.getElementById('result-text');
+
+      document.getElementById('progress-bar').style.width = '100%';
+
+      if (score === questions.length) {
+        iconDiv.innerHTML = '<i class="bi bi-trophy-fill text-warning" style="font-size: 4rem;"></i>';
+        title.innerText = `Pontuação Perfeita: ${score}/${questions.length}!`;
+        text.innerText = "Incrível! Você absorveu todos os alertas do BioNano. Você compreende com precisão os riscos celulares e ecológicos dos microplásticos e está pronto para ser um multiplicador dessa causa!";
+      } else if (score >= 4) {
+        iconDiv.innerHTML = '<i class="bi bi-patch-check-fill text-success" style="font-size: 4rem;"></i>';
+        title.innerText = `Muito Bom: ${score}/${questions.length}!`;
+        text.innerText = "Você prestou bastante atenção na leitura! Conhece os principais perigos físicos e químicos do plástico, faltando apenas pequenos detalhes para dominar o tema por completo.";
+      } else {
+        iconDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>';
+        title.innerText = `Resultado: ${score}/${questions.length}`;
+        text.innerText = "Parece que alguns dados alarmantes passaram batidos! Que tal dar mais uma conferida nas seções de 'Efeitos' e 'Cientistas' do BioNano e tentar novamente?";
+      }
+    }
+  </script>
+
+</body>
+</html>
