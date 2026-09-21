@@ -1050,6 +1050,16 @@ section,
     margin-bottom: 30px;
   }
 }
+/*--------------------------------------------------------------
+# Sobre nós Section 
+--------------------------------------------------------------*/
+.sobre-nos .ods .img {
+  background-color: color-mix(in srgb, var(--nav-color), transparent 80%);
+}
+
+.sobre-nos .ods .titulo {
+  color: color-mix(in srgb, var(--accent-color), transparent 35%);
+}
 
 /*--------------------------------------------------------------
 # About Section
