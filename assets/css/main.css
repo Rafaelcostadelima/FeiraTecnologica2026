@@ -3820,6 +3820,45 @@ section,
   }
 }
 
+/* Botão Anônimo */
+.btn-anonimo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+/* Quando estiver ativado */
+.btn-anonimo.active {
+  background-color: var(--accent-color);
+  color: var(--background-color);
+}
+
+/* Campos desativados pelo modo anônimo */
+input[readonly] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.modal-success-icon {
+  color: var(--accent-color);
+}
+
+
+.btn-fechar{
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-fechar:hover{
+  background-color: color-mix(in srgb, var(--accent-color), transparent 10%);
+  color: white;
+}
 /*--------------------------------------------------------------
 # Starter Section Section
 --------------------------------------------------------------*/
