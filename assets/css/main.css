@@ -573,7 +573,7 @@ h6 {
   font-size: 18px;
   display: inline-block;
   background: color-mix(in srgb, var(--default-color), transparent 12%);
-  color: color-mix(in sgbd, var(--contrast-color), white 10%);
+  color: color-mix(in srgb, var(--contrast-color), white 10%);
   line-height: 1;
   padding: 8px 0;
   margin-right: 4px;
@@ -3864,4 +3864,36 @@ input[readonly] {
 --------------------------------------------------------------*/
 .starter-section {
   /* Add your styles here */
+}
+
+/* Botão Especial de Desbloqueio da Fase 2 */
+.btn-fase2 {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: 2px solid #34d399;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+  animation: pulseGlow 1.8s infinite;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.3s ease;
+}
+
+.btn-fase2:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.9);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.85);
+  }
 }

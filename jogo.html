@@ -5,7 +5,8 @@
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Desafio BioNano - O Jogo</title>
-  <meta name="description" content="Teste seus conhecimentos sobre o impacto dos microplásticos no planeta e no corpo humano.">
+  <meta name="description"
+    content="Teste seus conhecimentos sobre o impacto dos microplásticos no planeta e no corpo humano.">
 
   <!-- Favicons -->
   <link href="assets/img/BioNano-Logo.png" rel="icon">
@@ -14,7 +15,9 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Raleway:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -184,17 +187,20 @@
   <main class="main">
     <section class="game-section">
       <div class="container">
-        
+
         <!-- Tela Inicial do Jogo -->
         <div id="start-screen" class="game-box text-center">
           <div class="mb-4">
             <i class="bi bi-controller text-success" style="font-size: 3.5rem;"></i>
           </div>
-          <h2 class="mb-3" style="font-weight: 800; color: var(--heading-color);">Desafio BioNano: O Teste da Realidade</h2>
+          <h2 class="mb-3" style="font-weight: 800; color: var(--heading-color);">Desafio BioNano: O Teste da Realidade
+          </h2>
           <p class="mb-4" style="font-size: 1.1rem; color: color-mix(in srgb, var(--default-color), transparent 20%);">
-            Você realmente compreendeu a dimensão da ameaça microscópica ao ler o site? Este jogo avalia sua atenção aos dados ecológicos, biológicos e científicos apresentados na plataforma.
+            Você realmente compreendeu a dimensão da ameaça microscópica ao ler o site? Este jogo avalia sua atenção aos
+            dados ecológicos, biológicos e científicos apresentados na plataforma.
           </p>
-          <button class="btn btn-primary px-5 py-3 rounded-pill fw-bold" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="startGame()">
+          <button class="btn btn-primary px-5 py-3 rounded-pill fw-bold"
+            style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="startGame()">
             Começar Desafio <i class="bi bi-play-circle-fill ms-2"></i>
           </button>
         </div>
@@ -231,6 +237,21 @@
           <div id="result-icon" class="mb-3"></div>
           <h2 id="result-title" class="fw-bold mb-3" style="color: var(--heading-color);"></h2>
           <p id="result-text" class="lead mb-4"></p>
+
+          <!-- AQUI ENTRA O PASSO 2 (CONTAINER DO BOTÃO ESPECIAL) -->
+          <div id="fase2-container" class="mb-4" style="display: none;">
+            <div class="p-3 mb-3 rounded-4" style="background: rgba(16, 185, 129, 0.1); border: 1px dashed #10b981;">
+              <span class="badge bg-success mb-2 px-3 py-2 text-uppercase">Desbloqueado!</span>
+              <h5 class="fw-bold mb-2" style="color: var(--heading-color);">Você liberou o Desafio Prático!</h5>
+              <p class="small text-muted mb-3">Seu conhecimento teórico foi aprovado. Agora vá para o campo de batalha microscópico.</p>
+              
+              <a href="jogo2.html" class="btn-fase2">
+                <i class="bi bi-controller"></i> Jogar Fase 2: O Jogo Interativo <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+          <!-- FIM DO PASSO 2 -->
+
           <div class="d-flex gap-3 justify-content-center flex-wrap">
             <button class="btn btn-primary rounded-pill px-4 py-2" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="startGame()">
               <i class="bi bi-arrow-clockwise me-1"></i> Jogar Novamente
@@ -403,24 +424,37 @@
       const iconDiv = document.getElementById('result-icon');
       const title = document.getElementById('result-title');
       const text = document.getElementById('result-text');
+      const fase2Container = document.getElementById('fase2-container');
 
       document.getElementById('progress-bar').style.width = '100%';
+
+      // Regra: desbloqueia com 5 ou 6 acertos
+      if (score >= 5) {
+        fase2Container.style.display = 'block';
+      } else {
+        fase2Container.style.display = 'none';
+      }
 
       if (score === questions.length) {
         iconDiv.innerHTML = '<i class="bi bi-trophy-fill text-warning" style="font-size: 4rem;"></i>';
         title.innerText = `Pontuação Perfeita: ${score}/${questions.length}!`;
-        text.innerText = "Incrível! Você absorveu todos os alertas do BioNano. Você compreende com precisão os riscos celulares e ecológicos dos microplásticos e está pronto para ser um multiplicador dessa causa!";
-      } else if (score >= 4) {
+        text.innerText = "Incrível! Você absorveu todos os alertas do BioNano e conquistou acesso exclusivo à Fase 2!";
+      } else if (score === 5) {
         iconDiv.innerHTML = '<i class="bi bi-patch-check-fill text-success" style="font-size: 4rem;"></i>';
-        title.innerText = `Muito Bom: ${score}/${questions.length}!`;
-        text.innerText = "Você prestou bastante atenção na leitura! Conhece os principais perigos físicos e químicos do plástico, faltando apenas pequenos detalhes para dominar o tema por completo.";
+        title.innerText = `Excelente: ${score}/${questions.length}!`;
+        text.innerText = "Muito bom! Com 5 acertos você provou que está bem informado e liberou o próximo nível interativo!";
+      } else if (score >= 3) {
+        iconDiv.innerHTML = '<i class="bi bi-emoji-neutral-fill text-warning" style="font-size: 4rem;"></i>';
+        title.innerText = `Resultado: ${score}/${questions.length}`;
+        text.innerText = "Você foi bem, mas precisa de pelo menos 5 acertos para liberar a Fase 2 interativa. Tente novamente!";
       } else {
         iconDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>';
         title.innerText = `Resultado: ${score}/${questions.length}`;
-        text.innerText = "Parece que alguns dados alarmantes passaram batidos! Que tal dar mais uma conferida nas seções de 'Efeitos' e 'Cientistas' do BioNano e tentar novamente?";
+        text.innerText = "Muitos dados alarmantes passaram batidos! Dê mais uma conferida no site e refaça o quiz para tentar liberar o jogo secreto.";
       }
     }
   </script>
 
 </body>
+
 </html>
