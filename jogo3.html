@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>BioNano - Jogo 3: Defesa do Santuário (Tower Defense)</title>
+  <meta name="description" content="Proteja o recife marinho instalando barreiras biotecnológicas contra as ondas de microplásticos.">
+
+  <!-- Favicons -->
+  <link href="assets/img/BioNano-Logo.png" rel="icon">
+  <link href="assets/img/BioNano-Logo.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    .td-section {
+      padding-top: 120px;
+      padding-bottom: 50px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .td-container {
+      background: var(--surface-color);
+      border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Barra Superior de Recursos */
+    .td-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 25px;
+      border-radius: 50px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .hud-stat {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--heading-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Container do Mapa Canvas */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      background: #bbf7d0;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 3px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      user-select: none;
+    }
+
+    #tdCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* Painel de Compra de Torres */
+    .tower-shop {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .tower-card {
+      background: #ffffff;
+      border: 2px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+      border-radius: 14px;
+      padding: 10px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tower-card:hover {
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .tower-card.selected {
+      border-color: #16a34a;
+      background: #f0fdf4;
+      box-shadow: 0 0 0 3px #16a34a;
+    }
+
+    .tower-card.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: #d1d5db;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .tower-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 6px;
+    }
+
+    .tower-icon-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .btn-wave {
+      background: var(--accent-color);
+      color: var(--contrast-color);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+
+    .btn-wave:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--accent-color), black 15%);
+      transform: translateY(-2px);
+    }
+
+    .btn-wave:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      .tower-shop {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+        <h1 class="sitename">BioNano</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="index.html#hero">Início</a></li>
+          <li><a href="index.html#about">Contexto</a></li>
+          <li><a href="index.html#features">Efeitos</a></li>
+          <li><a href="index.html#services">Possíveis soluções</a></li>
+          <li><a href="index.html#testimonials">Cientistas</a></li>
+          <li><a href="index.html#contact">Contato</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+      <a class="btn-getstarted active" href="jogo3.html">Jogo 3: Defesa</a>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="td-section">
+      <div class="container">
+        <div class="td-container">
+
+          <!-- TELA 1: INTRODUÇÃO -->
+          <div id="screen-intro" class="text-center py-4">
+            <div class="mb-3">
+              <i class="bi bi-shield-shaded text-success" style="font-size: 3.8rem;"></i>
+            </div>
+            <h2 class="fw-bold mb-3" style="color: var(--heading-color);">Fase Final: Defesa do Santuário Marinho</h2>
+            <p class="lead text-muted mb-4" style="max-width: 650px; margin: 0 auto;">
+              Uma grande corrente de detritos plásticos ameaça invadir o recife de corais! Posicione defesas biotecnológicas nas margens para dissolver os invasores.
+            </p>
+
+            <div class="alert alert-warning py-2 mb-4 d-inline-block rounded-pill px-4" style="font-size: 0.9rem;">
+              <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>
+              <strong>Atenção ao perigo:</strong> Detritos maiores e o Boss arrancam muito mais vidas do Santuário!
+            </div>
+
+            <div class="row g-3 justify-content-center mb-4 text-start" style="max-width: 720px; margin: 0 auto;">
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded-4 border h-100 shadow-sm">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <img src="assets/img/jogo/torre-filtro.png" style="width: 26px; height: 26px;" alt="Nanofiltro">
+                    <h6 class="fw-bold text-success mb-0">Nanofiltro</h6>
+                  </div>
+                  <p class="small text-muted mb-0">Disparos ultrarrápidos de taninos. Perfeito para conter as microfibras velozes.</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded-4 border h-100 shadow-sm">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <img src="assets/img/jogo/torre-enzima.png" style="width: 26px; height: 26px;" alt="Enzima PETase">
+                    <h6 class="fw-bold text-primary mb-0">Enzima PETase</h6>
+                  </div>
+                  <p class="small text-muted mb-0">Corrói polímeros com ácido enzimático e reduz a velocidade dos fragmentos pesados.</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded-4 border h-100 shadow-sm">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <img src="assets/img/jogo/torre-fungo.png" style="width: 26px; height: 26px;" alt="Fungo Amazônico">
+                    <h6 class="fw-bold text-warning mb-0">Fungo Amazônico</h6>
+                  </div>
+                  <p class="small text-muted mb-0">Libera esporos de biodigestão que causam explosões de dano em área maciça.</p>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary px-5 py-3 rounded-pill fw-bold" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="iniciarJogoTD()">
+              Iniciar Defesa Biológica <i class="bi bi-play-circle-fill ms-2"></i>
+            </button>
+          </div>
+
+          <!-- TELA 2: ARENA DO TOWER DEFENSE -->
+          <div id="screen-gameplay" style="display: none;">
+            
+            <div class="td-hud">
+              <div class="hud-stat text-success">
+                <i class="bi bi-coin"></i> <span id="hud-moedas">120 BioCréditos</span>
+              </div>
+              <div class="hud-stat text-danger">
+                <i class="bi bi-heart-fill"></i> <span id="hud-vidas">10 Vidas</span>
+              </div>
+              <div class="hud-stat text-primary">
+                <i class="bi bi-water"></i> <span id="hud-onda">Onda 1 / 5</span>
+              </div>
+              <button id="btn-iniciar-onda" class="btn-wave" onclick="dispararProximaOnda()">
+                Liberar Onda <i class="bi bi-play-fill"></i>
+              </button>
+            </div>
+
+            <div class="canvas-container">
+              <canvas id="tdCanvas" width="800" height="450"></canvas>
+            </div>
+
+            <!-- Painel de Compra de Torres com Imagens Reais -->
+            <div class="tower-shop">
+              <div class="tower-card" id="card-tower-1" onclick="selecionarTorre(0)">
+                <div class="tower-icon-box" style="background: #f0fdf4;">
+                  <img src="assets/img/jogo/torre-filtro.png" alt="Torre Filtro">
+                </div>
+                <div>
+                  <div class="fw-bold small" style="color: var(--heading-color);">Nanofiltro Taninos</div>
+                  <div class="small text-muted">Custo: <strong class="text-success">50</strong> | Tiro Rápido</div>
+                </div>
+              </div>
+
+              <div class="tower-card" id="card-tower-2" onclick="selecionarTorre(1)">
+                <div class="tower-icon-box" style="background: #f0f9ff;">
+                  <img src="assets/img/jogo/torre-enzima.png" alt="Torre Enzima">
+                </div>
+                <div>
+                  <div class="fw-bold small" style="color: var(--heading-color);">Enzima PETase</div>
+                  <div class="small text-muted">Custo: <strong class="text-success">80</strong> | Lentidão</div>
+                </div>
+              </div>
+
+              <div class="tower-card" id="card-tower-3" onclick="selecionarTorre(2)">
+                <div class="tower-icon-box" style="background: #fffbeb;">
+                  <img src="assets/img/jogo/torre-fungo.png" alt="Torre Fungo">
+                </div>
+                <div>
+                  <div class="fw-bold small" style="color: var(--heading-color);">Fungo Amazônico</div>
+                  <div class="small text-muted">Custo: <strong class="text-success">120</strong> | Dano em Área</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center mt-2">
+              <small class="text-muted"><i class="bi bi-info-circle"></i> Selecione uma torre acima e clique na margem verde para construí-la.</small>
+            </div>
+
+          </div>
+
+          <!-- TELA 3: RESULTADO FINAL -->
+          <div id="screen-result" class="text-center py-4" style="display: none;">
+            <div id="td-result-icon" class="mb-3"></div>
+            <h2 id="td-result-title" class="fw-bold mb-2" style="color: var(--heading-color);"></h2>
+            <p id="td-result-desc" class="lead text-muted mb-4" style="max-width: 620px; margin: 0 auto;"></p>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+              <button class="btn btn-primary rounded-pill px-4 py-2" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="iniciarJogoTD()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Tentar Novamente
+              </button>
+
+              <a href="jogo2.html" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Jogo anterior (Filtro)
+              </a>
+
+              <a href="index.html" class="btn btn-outline-success rounded-pill px-4 py-2">
+                <i class="bi bi-house me-1"></i> Voltar ao Início
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =====================================================================
+       SISTEMA DE ÁUDIO SINTÉTICO (Web Audio API)
+    ===================================================================== */
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function somConstruir() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.08);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } catch (e) {}
+    }
+
+    function somTiro(tipo) {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        if (tipo === 'tanino') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(750, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (tipo === 'enzima') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        }
+      } catch (e) {}
+    }
+
+    function somMoeda() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now);
+        osc.frequency.setValueAtTime(1318.51, now + 0.06);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      } catch (e) {}
+    }
+
+    function somDanoBase() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch (e) {}
+    }
+
+    /* =====================================================================
+       CARREGAMENTO DE TODAS AS IMAGENS REAIS (assets/img/jogo/)
+    ===================================================================== */
+    const imagens = {};
+    const arquivos = {
+      dust: 'assets/img/jogo/dust.png',
+      fragmento: 'assets/img/jogo/plastico-fragmento.png',
+      garrafa: 'assets/img/jogo/garrafa-pet.png',
+      torreFiltro: 'assets/img/jogo/torre-filtro.png',
+      torreEnzima: 'assets/img/jogo/torre-enzima.png',
+      torreFungo: 'assets/img/jogo/torre-fungo.png',
+      tartaruga: 'assets/img/jogo/tartaruga.png',
+      coral: 'assets/img/jogo/coral.png'
+    };
+
+    for (let k in arquivos) {
+      imagens[k] = new Image();
+      imagens[k].src = arquivos[k];
+      imagens[k].onerror = () => {
+        if (!imagens[k].src.includes('.png.png')) {
+          imagens[k].src = arquivos[k].replace('.png', '.png.png');
+        }
+      };
+    }
+
+    /* =====================================================================
+       VARIÁVEIS DO JOGO
+    ===================================================================== */
+    const VIDAS_INICIAIS = 10;
+    const MOEDAS_INICIAIS = 120;
+    const TOTAL_ONDAS = 5;
+
+    const TIPOS_TORRES = [
+      { id: 0, nome: "Nanofiltro", custo: 50, alcance: 115, dano: 9, cadencia: 20, cor: "#22c55e", imgKey: "torreFiltro", tipoTiro: "tanino" },
+      { id: 1, nome: "Enzima PETase", custo: 80, alcance: 135, dano: 16, cadencia: 36, cor: "#0284c7", imgKey: "torreEnzima", tipoTiro: "enzima", lentidao: 0.5 },
+      { id: 2, nome: "Fungo Amazônico", custo: 120, alcance: 105, dano: 36, cadencia: 58, cor: "#d97706", imgKey: "torreFungo", tipoTiro: "fungo", area: 60 }
+    ];
+
+    const WAYPOINTS = [
+      { x: -25, y: 100 },
+      { x: 220, y: 100 },
+      { x: 220, y: 320 },
+      { x: 480, y: 320 },
+      { x: 480, y: 140 },
+      { x: 680, y: 140 },
+      { x: 680, y: 280 },
+      { x: 800, y: 280 }
+    ];
+
+    let moedas = MOEDAS_INICIAIS;
+    let vidas = VIDAS_INICIAIS;
+    let ondaAtual = 0;
+    let ondaEmAndamento = false;
+    let torreSelecionada = null;
+    let torresConstruidas = [];
+    let inimigos = [];
+    let projeteis = [];
+    let particulas = [];
+    let textosFlutuantes = [];
+    let mousePos = { x: -100, y: -100 };
+    let animId = null;
+    let ticks = 0;
+    let alertaBase = 0;
+
+    const canvas = document.getElementById("tdCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const hudMoedas = document.getElementById("hud-moedas");
+    const hudVidas = document.getElementById("hud-vidas");
+    const hudOnda = document.getElementById("hud-onda");
+    const btnIniciarOnda = document.getElementById("btn-iniciar-onda");
+
+    function atualizarHUD() {
+      hudMoedas.innerText = `${moedas} BioCréditos`;
+      hudVidas.innerText = `${vidas} Vidas`;
+      hudOnda.innerText = `Onda ${Math.min(ondaAtual, TOTAL_ONDAS)} / ${TOTAL_ONDAS}`;
+
+      TIPOS_TORRES.forEach((torre, idx) => {
+        const card = document.getElementById(`card-tower-${idx + 1}`);
+        if (moedas < torre.custo) {
+          card.classList.add("disabled");
+        } else {
+          card.classList.remove("disabled");
+        }
+      });
+    }
+
+    function selecionarTorre(index) {
+      if (moedas < TIPOS_TORRES[index].custo) return;
+      document.querySelectorAll(".tower-card").forEach(c => c.classList.remove("selected"));
+
+      if (torreSelecionada === index) {
+        torreSelecionada = null;
+      } else {
+        torreSelecionada = index;
+        document.getElementById(`card-tower-${index + 1}`).classList.add("selected");
+      }
+    }
+
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mousePos.x = (e.clientX - rect.left) * (canvas.width / rect.width);
+      mousePos.y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      mousePos.x = -100;
+      mousePos.y = -100;
+    });
+
+    function iniciarJogoTD() {
+      document.getElementById("screen-intro").style.display = "none";
+      document.getElementById("screen-result").style.display = "none";
+      document.getElementById("screen-gameplay").style.display = "block";
+
+      moedas = MOEDAS_INICIAIS;
+      vidas = VIDAS_INICIAIS;
+      ondaAtual = 0;
+      ondaEmAndamento = false;
+      torreSelecionada = null;
+      torresConstruidas = [];
+      inimigos = [];
+      projeteis = [];
+      particulas = [];
+      textosFlutuantes = [];
+      alertaBase = 0;
+
+      document.querySelectorAll(".tower-card").forEach(c => c.classList.remove("selected"));
+      btnIniciarOnda.disabled = false;
+      btnIniciarOnda.innerHTML = 'Liberar Onda <i class="bi bi-play-fill"></i>';
+
+      atualizarHUD();
+      cancelAnimationFrame(animId);
+      animId = requestAnimationFrame(loopTD);
+    }
+
+    /* =====================================================================
+       LÓGICA DE DANO:
+       Inimigos maiores com mais HP causam mais dano à base!
+    ===================================================================== */
+    function gerarInimigosOnda(numOnda) {
+      const lista = [];
+      const config = [
+        { microfibras: 8, fragmentos: 0, garrafas: 0, boss: 0 },
+        { microfibras: 6, fragmentos: 6, garrafas: 0, boss: 0 },
+        { microfibras: 5, fragmentos: 8, garrafas: 4, boss: 0 },
+        { microfibras: 8, fragmentos: 12, garrafas: 6, boss: 0 },
+        { microfibras: 10, fragmentos: 14, garrafas: 8, boss: 1 }
+      ][numOnda - 1];
+
+      let delay = 0;
+      // Microfibra: 35 HP -> arranca 1 vida
+      for (let i = 0; i < config.microfibras; i++) {
+        lista.push({ imgKey: "dust", hpMax: 35, hp: 35, speed: 2.3, valor: 8, danoBase: 1, raio: 16, corTema: "#f87171", delay: delay += 38 });
+      }
+      // Fragmento: 75 HP -> arranca 2 vidas
+      for (let i = 0; i < config.fragmentos; i++) {
+        lista.push({ imgKey: "fragmento", hpMax: 75, hp: 75, speed: 1.6, valor: 14, danoBase: 2, raio: 18, corTema: "#ef4444", delay: delay += 48 });
+      }
+      // Polímero Denso / Garrafa: 170 HP -> arranca 3 vidas
+      for (let i = 0; i < config.garrafas; i++) {
+        lista.push({ imgKey: "garrafa", hpMax: 170, hp: 170, speed: 1.1, valor: 25, danoBase: 3, raio: 22, corTema: "#dc2626", delay: delay += 68 });
+      }
+      // Boss: 550 HP -> arranca 5 vidas!
+      if (config.boss > 0) {
+        lista.push({ imgKey: "garrafa", boss: true, hpMax: 550, hp: 550, speed: 0.8, valor: 100, danoBase: 5, raio: 30, corTema: "#7f1d1d", delay: delay += 95 });
+      }
+      return lista;
+    }
+
+    let filaSpawnOnda = [];
+
+    function dispararProximaOnda() {
+      if (ondaEmAndamento || ondaAtual >= TOTAL_ONDAS) return;
+      ondaAtual++;
+      ondaEmAndamento = true;
+      btnIniciarOnda.disabled = true;
+      btnIniciarOnda.innerText = "Defendendo...";
+      atualizarHUD();
+      filaSpawnOnda = gerarInimigosOnda(ondaAtual);
+    }
+
+    canvas.addEventListener("click", function(e) {
+      if (torreSelecionada === null) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+      const modelo = TIPOS_TORRES[torreSelecionada];
+      if (moedas < modelo.custo) return;
+
+      for (let i = 0; i < WAYPOINTS.length - 1; i++) {
+        const p1 = WAYPOINTS[i];
+        const p2 = WAYPOINTS[i + 1];
+        if (distanciaPontoSegmento(clickX, clickY, p1.x, p1.y, p2.x, p2.y) < 38) {
+          return;
+        }
+      }
+
+      for (let t of torresConstruidas) {
+        if (Math.hypot(clickX - t.x, clickY - t.y) < 38) {
+          return;
+        }
+      }
+
+      moedas -= modelo.custo;
+      somConstruir();
+      torresConstruidas.push({
+        x: clickX,
+        y: clickY,
+        ...modelo,
+        cooldown: 0
+      });
+
+      torreSelecionada = null;
+      document.querySelectorAll(".tower-card").forEach(c => c.classList.remove("selected"));
+      atualizarHUD();
+    });
+
+    function distanciaPontoSegmento(px, py, x1, y1, x2, y2) {
+      const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+      if (l2 === 0) return Math.hypot(px - x1, py - y1);
+      let t = Math.max(0, Math.min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2));
+      return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+    }
+
+    function criarExplosaoTD(x, y, cor, qtd = 10) {
+      for (let i = 0; i < qtd; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const vel = Math.random() * 3 + 1.5;
+        particulas.push({
+          x: x,
+          y: y,
+          vx: Math.cos(ang) * vel,
+          vy: Math.sin(ang) * vel,
+          raio: Math.random() * 3.5 + 1.5,
+          cor: cor,
+          alpha: 1
+        });
+      }
+    }
+
+    function criarTextoFlutuante(x, y, texto, cor = "#16a34a") {
+      textosFlutuantes.push({
+        x: x,
+        y: y,
+        texto: texto,
+        cor: cor,
+        alpha: 1,
+        vy: -1.5
+      });
+    }
+
+    function loopTD() {
+      ticks++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (alertaBase > 0) alertaBase--;
+
+      desenharCenario();
+
+      if (filaSpawnOnda.length > 0) {
+        for (let i = filaSpawnOnda.length - 1; i >= 0; i--) {
+          filaSpawnOnda[i].delay--;
+          if (filaSpawnOnda[i].delay <= 0) {
+            const inimigo = filaSpawnOnda.splice(i, 1)[0];
+            inimigos.push({
+              ...inimigo,
+              x: WAYPOINTS[0].x,
+              y: WAYPOINTS[0].y,
+              waypointIndex: 0,
+              lentidaoTempo: 0,
+              rotacao: 0
+            });
+          }
+        }
+      }
+
+      // 1. Inimigos
+      for (let i = inimigos.length - 1; i >= 0; i--) {
+        const p = inimigos[i];
+
+        let vel = p.speed;
+        if (p.lentidaoTempo > 0) {
+          vel *= 0.55;
+          p.lentidaoTempo--;
+        }
+
+        const alvo = WAYPOINTS[p.waypointIndex + 1];
+        if (alvo) {
+          const dx = alvo.x - p.x;
+          const dy = alvo.y - p.y;
+          const dist = Math.hypot(dx, dy);
+
+          if (dist < vel) {
+            p.x = alvo.x;
+            p.y = alvo.y;
+            p.waypointIndex++;
+            if (p.waypointIndex >= WAYPOINTS.length - 1) {
+              
+              // ===============================================
+              // DANO PROPORCIONAL AO TAMANHO DO INIMIGO
+              // ===============================================
+              const danoTomado = p.danoBase || 1;
+              vidas = Math.max(0, vidas - danoTomado);
+              alertaBase = 20 + danoTomado * 6; // Pisca mais forte se for um dano alto
+              somDanoBase();
+
+              // Alerta flutuante vermelho no Santuário
+              criarTextoFlutuante(745, 230, `-${danoTomado} VIDAS!`, '#dc2626');
+              criarExplosaoTD(p.x, p.y, "#ef4444", 15 + danoTomado * 3);
+
+              atualizarHUD();
+              inimigos.splice(i, 1);
+
+              if (vidas <= 0) {
+                encerrarJogoTD(false);
+                return;
+              }
+              continue;
+            }
+          } else {
+            p.x += (dx / dist) * vel;
+            p.y += (dy / dist) * vel;
+          }
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.raio, 0, Math.PI * 2);
+        ctx.fillStyle = p.boss ? "rgba(239, 68, 68, 0.4)" : "rgba(254, 202, 202, 0.8)";
+        ctx.fill();
+        ctx.lineWidth = p.boss ? 3 : 2;
+        ctx.strokeStyle = p.corTema;
+        ctx.stroke();
+
+        const imgInimigo = imagens[p.imgKey];
+        if (imgInimigo && imgInimigo.complete) {
+          const size = p.raio * 1.35;
+          ctx.drawImage(imgInimigo, p.x - size / 2, p.y - size / 2, size, size);
+        }
+
+        if (p.lentidaoTempo > 0) {
+          ctx.strokeStyle = "#38bdf8";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        const pctHp = Math.max(0, p.hp / p.hpMax);
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.fillRect(p.x - 14, p.y - p.raio - 8, 28, 4);
+        ctx.fillStyle = pctHp > 0.5 ? "#22c55e" : "#ef4444";
+        ctx.fillRect(p.x - 14, p.y - p.raio - 8, 28 * pctHp, 4);
+      }
+
+      // 2. Torres
+      for (let t of torresConstruidas) {
+        if (t.cooldown > 0) t.cooldown--;
+
+        let alvo = null;
+        let maiorProgresso = -1;
+
+        for (let inimi of inimigos) {
+          const d = Math.hypot(inimi.x - t.x, inimi.y - t.y);
+          if (d <= t.alcance) {
+            if (inimi.waypointIndex > maiorProgresso) {
+              maiorProgresso = inimi.waypointIndex;
+              alvo = inimi;
+            }
+          }
+        }
+
+        if (alvo && t.cooldown <= 0) {
+          t.cooldown = t.cadencia;
+          somTiro(t.tipoTiro);
+          projeteis.push({
+            x: t.x,
+            y: t.y,
+            alvo: alvo,
+            dano: t.dano,
+            tipo: t.tipoTiro,
+            lentidao: t.lentidao || 0,
+            area: t.area || 0,
+            cor: t.cor,
+            velocidade: 8
+          });
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = t.cor;
+        ctx.stroke();
+
+        if (t.imgKey && imagens[t.imgKey] && imagens[t.imgKey].complete) {
+          const imgT = imagens[t.imgKey];
+          ctx.drawImage(imgT, t.x - 13, t.y - 13, 26, 26);
+        }
+        ctx.restore();
+      }
+
+      // 3. Projéteis
+      for (let i = projeteis.length - 1; i >= 0; i--) {
+        const proj = projeteis[i];
+        const dx = proj.alvo.x - proj.x;
+        const dy = proj.alvo.y - proj.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < proj.velocidade) {
+          if (proj.area > 0) {
+            criarExplosaoTD(proj.alvo.x, proj.alvo.y, "#f59e0b", 16);
+            for (let inimi of inimigos) {
+              if (Math.hypot(inimi.x - proj.alvo.x, inimi.y - proj.alvo.y) <= proj.area) {
+                inimi.hp -= proj.dano;
+              }
+            }
+          } else {
+            proj.alvo.hp -= proj.dano;
+            criarExplosaoTD(proj.alvo.x, proj.alvo.y, proj.cor, 5);
+            if (proj.lentidao > 0) proj.alvo.lentidaoTempo = 65;
+          }
+
+          for (let k = inimigos.length - 1; k >= 0; k--) {
+            if (inimigos[k].hp <= 0) {
+              moedas += inimigos[k].valor;
+              somMoeda();
+              criarTextoFlutuante(inimigos[k].x, inimigos[k].y, `+${inimigos[k].valor}`, "#16a34a");
+              criarExplosaoTD(inimigos[k].x, inimigos[k].y, inimigos[k].corTema, 18);
+              atualizarHUD();
+              inimigos.splice(k, 1);
+            }
+          }
+
+          projeteis.splice(i, 1);
+        } else {
+          proj.x += (dx / dist) * proj.velocidade;
+          proj.y += (dy / dist) * proj.velocidade;
+
+          ctx.beginPath();
+          ctx.arc(proj.x, proj.y, proj.tipo === 'fungo' ? 6 : 4, 0, Math.PI * 2);
+          ctx.fillStyle = proj.cor;
+          ctx.fill();
+        }
+      }
+
+      // 4. Partículas
+      for (let i = particulas.length - 1; i >= 0; i--) {
+        const pt = particulas[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.alpha -= 0.035;
+        if (pt.alpha <= 0) {
+          particulas.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = pt.alpha;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, pt.raio, 0, Math.PI * 2);
+        ctx.fillStyle = pt.cor;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 5. Textos Flutuantes (Moedas e Dano)
+      for (let i = textosFlutuantes.length - 1; i >= 0; i--) {
+        const tf = textosFlutuantes[i];
+        tf.y += tf.vy;
+        tf.alpha -= 0.03;
+        if (tf.alpha <= 0) {
+          textosFlutuantes.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = tf.alpha;
+        ctx.font = "bold 15px Raleway, sans-serif";
+        ctx.fillStyle = tf.cor;
+        ctx.textAlign = "center";
+        ctx.fillText(tf.texto, tf.x, tf.y);
+        ctx.restore();
+      }
+
+      // 6. Fim da Onda
+      if (ondaEmAndamento && filaSpawnOnda.length === 0 && inimigos.length === 0) {
+        ondaEmAndamento = false;
+        moedas += 40;
+        somMoeda();
+        atualizarHUD();
+
+        if (ondaAtual >= TOTAL_ONDAS) {
+          encerrarJogoTD(true);
+          return;
+        } else {
+          btnIniciarOnda.disabled = false;
+          btnIniciarOnda.innerHTML = `Onda ${ondaAtual + 1} Pronta <i class="bi bi-play-fill"></i>`;
+        }
+      }
+
+      animId = requestAnimationFrame(loopTD);
+    }
+
+    function desenharCenario() {
+      ctx.fillStyle = "#86efac";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 42;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      ctx.moveTo(WAYPOINTS[0].x, WAYPOINTS[0].y);
+      for (let i = 1; i < WAYPOINTS.length; i++) {
+        ctx.lineTo(WAYPOINTS[i].x, WAYPOINTS[i].y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.45)";
+      ctx.lineWidth = 7;
+      ctx.setLineDash([14, 18]);
+      ctx.lineDashOffset = -ticks * 1.6;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Base do Santuário
+      const basePos = { x: 745, y: 280 };
+      const oscilacao = Math.sin(ticks * 0.05) * 3;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(basePos.x, basePos.y, 48, 0, Math.PI * 2);
+      ctx.fillStyle = "#7dd3fc";
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = alertaBase > 0 ? "#ef4444" : "#0284c7";
+      ctx.stroke();
+
+      const raioEscudo = 52 + Math.sin(ticks * 0.08) * 4;
+      ctx.beginPath();
+      ctx.arc(basePos.x, basePos.y, raioEscudo, 0, Math.PI * 2);
+      ctx.fillStyle = alertaBase > 0 ? "rgba(239, 68, 68, 0.35)" : "rgba(56, 189, 248, 0.18)";
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = alertaBase > 0 ? "#dc2626" : "rgba(14, 165, 233, 0.6)";
+      ctx.stroke();
+
+      const imgCoral = imagens.coral;
+      if (imgCoral && imgCoral.complete) {
+        ctx.drawImage(imgCoral, basePos.x - 38, basePos.y - 18 + oscilacao, 34, 34);
+      } else {
+        ctx.font = "26px sans-serif";
+        ctx.fillText("🪸", basePos.x - 22, basePos.y - 2);
+      }
+
+      const imgTartaruga = imagens.tartaruga;
+      if (imgTartaruga && imgTartaruga.complete) {
+        ctx.drawImage(imgTartaruga, basePos.x - 4, basePos.y - 16 - oscilacao, 36, 36);
+      } else {
+        ctx.font = "26px sans-serif";
+        ctx.fillText("🐢", basePos.x + 8, basePos.y + 12);
+      }
+      ctx.restore();
+
+      if (torreSelecionada !== null && mousePos.x > 0) {
+        const modelo = TIPOS_TORRES[torreSelecionada];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(mousePos.x, mousePos.y, modelo.alcance, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(22, 163, 74, 0.15)";
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = "rgba(22, 163, 74, 0.6)";
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(mousePos.x, mousePos.y, 18, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function encerrarJogoTD(vitoria) {
+      cancelAnimationFrame(animId);
+      document.getElementById("screen-gameplay").style.display = "none";
+      const resultScreen = document.getElementById("screen-result");
+      resultScreen.style.display = "block";
+
+      const icon = document.getElementById("td-result-icon");
+      const title = document.getElementById("td-result-title");
+      const desc = document.getElementById("td-result-desc");
+
+      if (vitoria) {
+        icon.innerHTML = '<i class="bi bi-trophy-fill text-warning" style="font-size: 4.5rem;"></i>';
+        title.innerText = "Missão Cumprida! O Santuário Foi Salvo!";
+        desc.innerText = "Incrível! Suas barreiras biotecnológicas neutralizaram 100% dos microplásticos e da Plastisfera invasora. O ecossistema marinho foi preservado com sucesso graças à sua estratégia!";
+      } else {
+        icon.innerHTML = '<i class="bi bi-shield-x text-danger" style="font-size: 4.5rem;"></i>';
+        title.innerText = "O Recife Foi Sobrecarregado!";
+        desc.innerText = "Os microplásticos pesados romperam as defesas e alcançaram a vida marinha. Repense sua estratégia de posicionamento e tente novamente!";
+      }
+    }
+  </script>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

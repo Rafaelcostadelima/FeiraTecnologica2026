@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>BioNano - Jogo 2: Filtro Nanotecnológico</title>
+  <meta name="description" content="Destrua os microplásticos antes que eles contaminem o reservatório de água!">
+
+  <!-- Favicons -->
+  <link href="assets/img/BioNano-Logo.png" rel="icon">
+  <link href="assets/img/BioNano-Logo.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Raleway:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <style>
+    .game-section {
+      padding-top: 130px;
+      padding-bottom: 60px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .game-container {
+      background: var(--surface-color);
+      border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+      max-width: 760px;
+      width: 100%;
+      margin: 0 auto;
+      backdrop-filter: blur(10px);
+    }
+
+    /* HUD Superior */
+    .game-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 12px 25px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);
+    }
+
+    .hud-item {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--heading-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hud-hearts i {
+      color: #e63946;
+      font-size: 1.3rem;
+      margin-right: 2px;
+      transition: transform 0.2s ease;
+    }
+
+    /* Área do Canvas */
+    #canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 60%, #7dd3fc 100%);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 3px solid color-mix(in srgb, var(--accent-color), transparent 70%);
+      box-shadow: inset 0 0 25px rgba(14, 165, 233, 0.25);
+      cursor: crosshair;
+      user-select: none;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Legenda com os ícones reais */
+    .guide-box {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-top: 15px;
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border: 1px dashed color-mix(in srgb, var(--accent-color), transparent 70%);
+    }
+
+    .guide-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+
+    .guide-pill img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+
+    .text-purple {
+      color: #7c3aed !important;
+    }
+
+    /* Botão Especial do Jogo 3 */
+    .btn-fase3 {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 14px 30px;
+      border-radius: 50px;
+      border: 2px solid #34d399;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+      animation: pulseGlow 1.8s infinite;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-fase3:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 28px rgba(16, 185, 129, 0.9); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+      <a href="index.html" class="logo d-flex align-items-center me-auto me-xl-0">
+        <h1 class="sitename">BioNano</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="index.html#hero">Início</a></li>
+          <li><a href="index.html#about">Contexto</a></li>
+          <li><a href="index.html#features">Efeitos</a></li>
+          <li><a href="index.html#services">Possíveis soluções</a></li>
+          <li><a href="index.html#testimonials">Cientistas</a></li>
+          <li><a href="index.html#contact">Contato</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+      <a class="btn-getstarted active" href="jogo2.html">Jogo 2: Filtro</a>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="game-section">
+      <div class="container">
+        <div class="game-container">
+          
+          <!-- TELA 1: Boas-vindas -->
+          <div id="start-screen" class="text-center py-4">
+            <div class="mb-3">
+              <i class="bi bi-funnel-fill text-success" style="font-size: 3.5rem;"></i>
+            </div>
+            <h2 class="fw-bold mb-3" style="color: var(--heading-color);">Fase 2: Filtro Nanotecnológico</h2>
+            <p class="lead mb-4 text-muted" style="max-width: 580px; margin: 0 auto;">
+              Partículas de microplásticos estão descendo pela água potável! Clique nelas com agilidade para purificar a água antes que o reservatório seja contaminado.
+            </p>
+
+            <div class="guide-box mb-4 text-start">
+              <div class="guide-pill text-danger">
+                <img src="assets/img/jogo/dust.png" alt="">
+                <img src="assets/img/jogo/plastico-fragmento.png" alt="">
+                <span>🔴 CLIQUE: Plásticos (+10 pts)</span>
+              </div>
+              <div class="guide-pill text-primary">
+                <img src="assets/img/jogo/agua-pura.png" alt="">
+                <img src="assets/img/jogo/mineral.png" alt="">
+                <span>💧/🌿 NÃO CLIQUE: Água e Minerais (-1 Vida)</span>
+              </div>
+              <div class="guide-pill text-purple">
+                <img src="assets/img/jogo/enzima.png" alt="">
+                <span>🟣 BÔNUS: Superenzima Roxa (+30 pts e limpa tela)</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary px-5 py-3 rounded-pill fw-bold" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="iniciarJogo()">
+              Ativar Filtro e Jogar <i class="bi bi-play-circle-fill ms-2"></i>
+            </button>
+          </div>
+
+          <!-- TELA 2: Tela de Ação -->
+          <div id="gameplay-screen" style="display: none;">
+            <div class="game-hud">
+              <div class="hud-item hud-hearts" id="hud-vidas"></div>
+              <div class="hud-item">
+                <i class="bi bi-bullseye text-primary"></i>
+                <span id="hud-pontos">Pontos: 0</span>
+              </div>
+              <div class="hud-item text-muted small">
+                <span>Meta: <strong id="hud-meta">150</strong> pts</span>
+              </div>
+            </div>
+
+            <div id="canvas-wrapper">
+              <canvas id="gameCanvas"></canvas>
+            </div>
+
+            <div class="guide-box">
+              <span class="text-danger">🔴 <strong>Destrua Plásticos</strong></span>
+              <span class="text-primary">💧/🌿 <strong>Poupe Água e Minerais</strong></span>
+              <span class="text-purple">🟣 <strong>Enzima Roxa Limpa a Tela!</strong></span>
+            </div>
+          </div>
+
+          <!-- TELA 3: Game Over / Vitória -->
+          <div id="gameover-screen" class="text-center py-4" style="display: none;">
+            <div id="go-icon" class="mb-3"></div>
+            <h2 id="go-title" class="fw-bold mb-2" style="color: var(--heading-color);"></h2>
+            <h4 id="go-score" class="fw-bold text-success mb-3"></h4>
+            <p id="go-desc" class="lead mb-4 text-muted" style="max-width: 600px; margin: 0 auto;"></p>
+
+            <!-- CONTAINER DO BOTÃO ESPECIAL PARA O JOGO 3 -->
+            <div id="vitoria-fase3-box" class="p-3 mb-4 rounded-4" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px dashed #10b981;">
+              <span class="badge bg-success mb-2 px-3 py-2 text-uppercase">Novo Nível Desbloqueado!</span>
+              <h5 class="fw-bold mb-2" style="color: var(--heading-color);">Filtro Operado com Sucesso!</h5>
+              <p class="small text-muted mb-3">Você neutralizou os microplásticos e garantiu água potável para todos. Acesso à fase final liberado!</p>
+              
+              <a href="jogo3.html" class="btn-fase3">
+                <i class="bi bi-stars"></i> Próximo Desafio (Jogo 3: Tower Defense) <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-center flex-wrap mt-4">
+              <button class="btn btn-primary rounded-pill px-4 py-2" style="background-color: var(--accent-color); border-color: var(--accent-color);" onclick="iniciarJogo()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Tentar Novamente
+              </button>
+              <a href="jogo.html" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                <i class="bi bi-arrow-left me-1"></i> Jogo anterior (Quiz)
+              </a>
+              <a href="index.html" class="btn btn-outline-success rounded-pill px-4 py-2">
+                <i class="bi bi-house me-1"></i> Voltar ao Início
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =====================================================================
+       CONFIGURAÇÕES GERAIS
+    ===================================================================== */
+    const META_PONTOS = 150;
+    const VIDAS_INICIAIS = 3;
+    const PONTOS_PLASTICO = 10;
+    const PONTOS_ENZIMA = 30;
+
+    const MENSAGEM_DERROTA = "A água do reservatório acabou sendo contaminada! Treine seu reflexo e tente novamente para bater a meta de 150 pontos e liberar o Jogo 3!";
+    const MENSAGEM_VITORIA = "Incrível! Você neutralizou os microplásticos com precisão cirúrgica e garantiu água 100% pura para o consumo!";
+
+    /* =====================================================================
+       SISTEMA DE ÁUDIO SINTÉTICO (Efeito "Poc", "Blop" e Enzima)
+    ===================================================================== */
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function somPoc() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        const freqInicial = 650 + (Math.random() * 120); 
+        osc.frequency.setValueAtTime(freqInicial, now);
+        osc.frequency.exponentialRampToValueAtTime(130, now + 0.07);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.07);
+      } catch (e) {}
+    }
+
+    function somErro() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.12);
+
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
+    function somEnzima() {
+      try {
+        const ctx = getAudioContext();
+        const notas = [523.25, 659.25, 783.99, 1046.50];
+        notas.forEach((nota, i) => {
+          const now = ctx.currentTime + (i * 0.04);
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(nota, now);
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(now);
+          osc.stop(now + 0.15);
+        });
+      } catch (e) {}
+    }
+
+    /* =====================================================================
+       CARREGAMENTO DAS IMAGENS DA PASTA assets/img/jogo/
+    ===================================================================== */
+    const imagens = {};
+    const arquivos = {
+      dust: 'assets/img/jogo/dust.png',
+      fragmento: 'assets/img/jogo/plastico-fragmento.png',
+      agua: 'assets/img/jogo/agua-pura.png',
+      mineral: 'assets/img/jogo/mineral.png',
+      enzima: 'assets/img/jogo/enzima.png'
+    };
+
+    let totalImagensCarregadas = 0;
+    for (let key in arquivos) {
+      imagens[key] = new Image();
+      imagens[key].src = arquivos[key];
+      imagens[key].onload = () => { totalImagensCarregadas++; };
+      imagens[key].onerror = () => {
+        if (!imagens[key].src.includes('.png.png')) {
+          imagens[key].src = arquivos[key].replace('.png', '.png.png');
+        }
+      };
+    }
+
+    // VELOCIDADES BASE AUMENTADAS (Mais ágil e direto)
+    const MODELOS = [
+      {
+        tipo: 'dust',
+        imgKey: 'dust',
+        bad: true,
+        raio: 28,
+        speed: 2.6,
+        corTema: '#ef4444',
+        corFundo1: 'rgba(254, 202, 202, 0.9)',
+        corFundo2: 'rgba(239, 68, 68, 0.7)'
+      },
+      {
+        tipo: 'fragmento',
+        imgKey: 'fragmento',
+        bad: true,
+        raio: 27,
+        speed: 2.8,
+        corTema: '#dc2626',
+        corFundo1: 'rgba(254, 215, 170, 0.9)',
+        corFundo2: 'rgba(234, 88, 12, 0.7)'
+      },
+      {
+        tipo: 'agua',
+        imgKey: 'agua',
+        bad: false,
+        raio: 28,
+        speed: 2.5,
+        corTema: '#0284c7',
+        corFundo1: 'rgba(224, 242, 254, 0.95)',
+        corFundo2: 'rgba(56, 189, 248, 0.7)'
+      },
+      {
+        tipo: 'mineral',
+        imgKey: 'mineral',
+        bad: false,
+        raio: 26,
+        speed: 2.7,
+        corTema: '#059669',
+        corFundo1: 'rgba(209, 250, 229, 0.95)',
+        corFundo2: 'rgba(16, 185, 129, 0.7)'
+      },
+      {
+        tipo: 'enzima',
+        imgKey: 'enzima',
+        bad: false,
+        powerup: true,
+        raio: 30,
+        speed: 3.6,
+        corTema: '#8b5cf6',
+        corFundo1: 'rgba(237, 233, 254, 0.95)',
+        corFundo2: 'rgba(139, 92, 246, 0.8)'
+      }
+    ];
+
+    // Elementos DOM
+    const startScreen = document.getElementById('start-screen');
+    const gameplayScreen = document.getElementById('gameplay-screen');
+    const gameoverScreen = document.getElementById('gameover-screen');
+    const hudVidas = document.getElementById('hud-vidas');
+    const hudPontos = document.getElementById('hud-pontos');
+    const hudMeta = document.getElementById('hud-meta');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    hudMeta.innerText = META_PONTOS;
+
+    // Estado do Jogo
+    let vidas = VIDAS_INICIAIS;
+    let pontos = 0;
+    let jogoAtivo = false;
+    let itens = [];
+    let particulas = [];
+    let textosFlutuantes = [];
+    let animId = null;
+    let ultimoSpawn = 0;
+    let taxaSpawn = 780; // Começa mais frequente (era 920)
+    let ticks = 0;
+    let dpr = 1;
+    let tempoInicio = 0;
+
+    function ajustarCanvas() {
+      dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', () => { if (jogoAtivo) ajustarCanvas(); });
+
+    function renderizarVidas() {
+      hudVidas.innerHTML = '';
+      for (let i = 0; i < VIDAS_INICIAIS; i++) {
+        const heart = document.createElement('i');
+        heart.className = i < vidas ? 'bi bi-heart-fill' : 'bi bi-heart text-muted';
+        hudVidas.appendChild(heart);
+      }
+    }
+
+    function iniciarJogo() {
+      startScreen.style.display = 'none';
+      gameoverScreen.style.display = 'none';
+      gameplayScreen.style.display = 'block';
+
+      ajustarCanvas();
+
+      vidas = VIDAS_INICIAIS;
+      pontos = 0;
+      itens = [];
+      particulas = [];
+      textosFlutuantes = [];
+      taxaSpawn = 780;
+      jogoAtivo = true;
+      ticks = 0;
+      tempoInicio = performance.now();
+
+      hudPontos.innerText = `Pontos: ${pontos}`;
+      renderizarVidas();
+
+      ultimoSpawn = performance.now();
+      cancelAnimationFrame(animId);
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    function spawnItem(tempoAtual) {
+      const rand = Math.random();
+      let modelo;
+      if (rand < 0.60) {
+        const plasticos = MODELOS.filter(m => m.bad);
+        modelo = plasticos[Math.floor(Math.random() * plasticos.length)];
+      } else if (rand < 0.92) {
+        const bons = MODELOS.filter(m => !m.bad && !m.powerup);
+        modelo = bons[Math.floor(Math.random() * bons.length)];
+      } else {
+        modelo = MODELOS.find(m => m.powerup);
+      }
+
+      const rectWidth = canvas.width / dpr;
+      const x = Math.random() * (rectWidth - 80) + 40;
+
+      // ACELERAÇÃO GRADUAL MAIS DINÂMICA (+0.28 por bloco de 10s)
+      const segundosPassados = Math.max(0, (tempoAtual - tempoInicio) / 1000);
+      const bonusTempo = Math.min((segundosPassados / 10) * 0.28, 3.5);
+
+      itens.push({
+        ...modelo,
+        origX: x,
+        x: x,
+        y: -40,
+        velocidade: modelo.speed + bonusTempo,
+        rotacao: (Math.random() - 0.5) * 0.3,
+        rotSpeed: (Math.random() - 0.5) * 0.02,
+        wobbleOffset: Math.random() * Math.PI * 2
+      });
+    }
+
+    function criarExplosao(x, y, cor, qtd = 14) {
+      for (let i = 0; i < qtd; i++) {
+        const ang = Math.random() * Math.PI * 2;
+        const vel = Math.random() * 4 + 2;
+        particulas.push({
+          x: x,
+          y: y,
+          vx: Math.cos(ang) * vel,
+          vy: Math.sin(ang) * vel,
+          raio: Math.random() * 4 + 2,
+          cor: cor,
+          alpha: 1,
+          vida: 1
+        });
+      }
+    }
+
+    function criarTextoFlutuante(x, y, texto, cor) {
+      textosFlutuantes.push({
+        x: x,
+        y: y,
+        texto: texto,
+        cor: cor,
+        alpha: 1,
+        vy: -2
+      });
+    }
+
+    function gameLoop(tempoAtual) {
+      if (!jogoAtivo) return;
+
+      ticks++;
+      const rectWidth = canvas.width / dpr;
+      const rectHeight = canvas.height / dpr;
+
+      ctx.clearRect(0, 0, rectWidth, rectHeight);
+
+      // Redução de intervalo mais intensa: cai 45ms a cada 10s (mínimo de 380ms)
+      const segundosPassados = Math.max(0, (tempoAtual - tempoInicio) / 1000);
+      const reducaoSpawn = (segundosPassados / 10) * 45;
+      taxaSpawn = Math.max(380, 780 - reducaoSpawn);
+
+      // Gerador de itens
+      if (tempoAtual - ultimoSpawn > taxaSpawn) {
+        spawnItem(tempoAtual);
+        ultimoSpawn = tempoAtual;
+      }
+
+      // 1. Partículas de Explosão
+      for (let i = particulas.length - 1; i >= 0; i--) {
+        const p = particulas[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.alpha -= 0.025;
+
+        if (p.alpha <= 0) {
+          particulas.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.raio, 0, Math.PI * 2);
+        ctx.fillStyle = p.cor;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 2. Itens Caindo
+      for (let i = itens.length - 1; i >= 0; i--) {
+        const item = itens[i];
+        item.y += item.velocidade;
+        item.rotacao += item.rotSpeed;
+        item.x = item.origX + Math.sin(ticks * 0.05 + item.wobbleOffset) * 12;
+
+        ctx.save();
+
+        ctx.shadowColor = item.corTema;
+        ctx.shadowBlur = item.powerup ? 20 : 10;
+
+        const grad = ctx.createRadialGradient(
+          item.x - item.raio * 0.35, item.y - item.raio * 0.35, item.raio * 0.1,
+          item.x, item.y, item.raio
+        );
+        grad.addColorStop(0, item.corFundo1);
+        grad.addColorStop(1, item.corFundo2);
+
+        ctx.beginPath();
+        ctx.arc(item.x, item.y, item.raio, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = item.corTema;
+        ctx.stroke();
+
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        ctx.beginPath();
+        ctx.ellipse(item.x - item.raio * 0.3, item.y - item.raio * 0.3, item.raio * 0.35, item.raio * 0.18, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fill();
+
+        const img = imagens[item.imgKey];
+        if (img && img.complete) {
+          ctx.translate(item.x, item.y);
+          ctx.rotate(item.rotacao);
+          const iconSize = item.raio * 1.15;
+          ctx.drawImage(img, -iconSize / 2, -iconSize / 2, iconSize, iconSize);
+        }
+
+        ctx.restore();
+
+        if (item.y - item.raio > rectHeight) {
+          if (item.bad) {
+            vidas--;
+            renderizarVidas();
+            criarExplosao(item.x, rectHeight - 5, '#ef4444', 20);
+            criarTextoFlutuante(item.x, rectHeight - 30, '-1 VIDA!', '#dc2626');
+
+            if (vidas <= 0) {
+              finalizarJogo();
+              return;
+            }
+          }
+          itens.splice(i, 1);
+        }
+      }
+
+      // 3. Textos Flutuantes
+      for (let i = textosFlutuantes.length - 1; i >= 0; i--) {
+        const tf = textosFlutuantes[i];
+        tf.y += tf.vy;
+        tf.alpha -= 0.025;
+
+        if (tf.alpha <= 0) {
+          textosFlutuantes.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = tf.alpha;
+        ctx.font = 'bold 18px Raleway, sans-serif';
+        ctx.fillStyle = tf.cor;
+        ctx.textAlign = 'center';
+        ctx.fillText(tf.texto, tf.x, tf.y);
+        ctx.restore();
+      }
+
+      animId = requestAnimationFrame(gameLoop);
+    }
+
+    // Clique e Toque com som
+    function tratarInteracao(clientX, clientY) {
+      if (!jogoAtivo) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const clickX = clientX - rect.left;
+      const clickY = clientY - rect.top;
+
+      for (let i = itens.length - 1; i >= 0; i--) {
+        const item = itens[i];
+        const dist = Math.hypot(clickX - item.x, clickY - item.y);
+
+        if (dist <= item.raio + 12) {
+          if (item.powerup) {
+            somEnzima();
+            pontos += PONTOS_ENZIMA;
+            criarExplosao(item.x, item.y, '#8b5cf6', 22);
+            criarTextoFlutuante(item.x, item.y, `+${PONTOS_ENZIMA} ENZIMA!`, '#7c3aed');
+
+            itens.forEach(it => {
+              if (it.bad) criarExplosao(it.x, it.y, '#ef4444', 10);
+            });
+            itens = itens.filter(it => !it.bad);
+
+          } else if (item.bad) {
+            somPoc();
+            pontos += PONTOS_PLASTICO;
+            criarExplosao(item.x, item.y, item.corTema, 16);
+            criarTextoFlutuante(item.x, item.y, `+${PONTOS_PLASTICO}`, '#16a34a');
+
+          } else {
+            somErro();
+            pontos = Math.max(0, pontos - 5);
+            vidas--;
+            renderizarVidas();
+            criarExplosao(item.x, item.y, item.corTema, 16);
+            criarTextoFlutuante(item.x, item.y, '-1 VIDA!', '#dc2626');
+
+            if (vidas <= 0) {
+              finalizarJogo();
+              return;
+            }
+          }
+
+          hudPontos.innerText = `Pontos: ${pontos}`;
+          itens.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => tratarInteracao(e.clientX, e.clientY));
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      tratarInteracao(touch.clientX, touch.clientY);
+    }, { passive: false });
+
+    function finalizarJogo() {
+      jogoAtivo = false;
+      cancelAnimationFrame(animId);
+
+      gameplayScreen.style.display = 'none';
+      gameoverScreen.style.display = 'block';
+
+      const goIcon = document.getElementById('go-icon');
+      const goTitle = document.getElementById('go-title');
+      const goScore = document.getElementById('go-score');
+      const goDesc = document.getElementById('go-desc');
+      const vitoriaBox = document.getElementById('vitoria-fase3-box');
+
+      goScore.innerText = `Sua pontuação: ${pontos} pontos (Meta: ${META_PONTOS})`;
+
+      if (pontos >= META_PONTOS) {
+        goIcon.innerHTML = '<i class="bi bi-trophy-fill text-warning" style="font-size: 4.5rem;"></i>';
+        goTitle.innerText = "Vitória! Água Descontaminada!";
+        goDesc.innerText = MENSAGEM_VITORIA;
+        vitoriaBox.style.display = 'block';
+      } else {
+        goIcon.innerHTML = '<i class="bi bi-shield-x text-danger" style="font-size: 4.5rem;"></i>';
+        goTitle.innerText = "Fim de Jogo!";
+        goDesc.innerText = MENSAGEM_DERROTA;
+        vitoriaBox.style.display = 'none';
+      }
+    }
+  </script>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
